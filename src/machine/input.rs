@@ -1,12 +1,8 @@
-use std::{path::PathBuf, fs, io};
+use std::{fs::{self, Metadata}, io, path::PathBuf};
 
-#[derive(Debug)]
-pub enum PossiblyNewPage {
-    NoError(Option<Page>),
-    Error(io::Error)
-}
+type PotentialPage = io::Result<Option<Page>>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Page {
     path: PathBuf,
     prefix_path: PathBuf,
@@ -50,19 +46,13 @@ impl Page {
         }
     }
 
-    pub fn new(containing_dir: PathBuf) -> PossiblyNewPage {
-        let dir_read: io::Result<fs::ReadDir> = fs::read_dir(containing_dir);
-        if dir_read.is_err() {
-            return PossiblyNewPage::Error(dir_read.err().unwrap())
-        }
-
+    pub fn new(containing_dir: PathBuf) -> PotentialPage {
+        let dir_read: fs::ReadDir = fs::read_dir(containing_dir)?;
+        
         let mut page: Page = Page::create_empty();
 
-        for entry in dir_read.unwrap() {
-            if entry.is_err() {
-                return PossiblyNewPage::Error(entry.err().unwrap())
-            }
-            let unwrapped_entry: fs::DirEntry = entry.unwrap();
+        for entry in dir_read {
+            let unwrapped_entry: fs::DirEntry = entry?;
 
             {
                 let potential_page_path: Option<PathBuf> = Page::get_entry_path_if_page(&unwrapped_entry);
@@ -89,16 +79,50 @@ impl Page {
         }
 
         if page.missing_page_path() {
-            return PossiblyNewPage::NoError(None)
+            return Ok(None)
         }        
 
-        PossiblyNewPage::NoError(Some(page))
+        Ok(Some(page))
     }
 
 }
 
-type PageList = Vec<Pages>;
+type PageList = Vec<Page>;
 
-pub struct Pages {
+#[derive(Debug)]
+pub struct TracedPages {
     list: PageList
+}
+impl TracedPages {
+    fn is_dir(entry: &fs::DirEntry) -> io::Result<bool> {
+        let metadata: fs::Metadata = entry.path().metadata()?;
+
+        Ok(metadata.is_dir())
+    }
+
+    fn is_empty(&self) -> bool {
+        return self.list.is_empty();
+    }
+
+    pub fn trace_pages(root_dir: &PathBuf) -> io::Result<TracedPages> {
+        let dir_read: fs::ReadDir = fs::read_dir(root_dir)?;
+
+        let mut page_list: PageList = vec![];
+
+        let new_page: Option<Page> = Page::new(root_dir.clone())?;
+        if new_page.is_some() {
+            page_list.push(new_page.unwrap());
+        }
+
+        for entry in dir_read {
+            let unwrapped_entry: fs::DirEntry = entry?;
+
+            if TracedPages::is_dir(&unwrapped_entry)? {
+                let subdir_trace_results: TracedPages = TracedPages::trace_pages(&unwrapped_entry.path())?;
+                page_list.extend_from_slice(&subdir_trace_results.list);
+            }
+        }
+
+        Ok(TracedPages {list: page_list})
+    }
 }
