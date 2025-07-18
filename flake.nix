@@ -11,6 +11,19 @@
     forAllSystems = nixpkgs.lib.genAttrs systems;
   in {
 
+    packages = forAllSystems (system: let
+      overlays = [ (import rust-overlay) ];
+      pkgs = import nixpkgs {
+        inherit system overlays;
+      };
+      rsTools = pkgs.rust-bin.stable."1.88.0".default;
+      textmachinePkg = pkgs.callPackage ./. {
+        inherit rsTools;
+      };
+    in {
+      default = textmachinePkg;
+    });
+
     devShells = forAllSystems (system: let
       overlays = [ (import rust-overlay) ];
       pkgs = import nixpkgs {
