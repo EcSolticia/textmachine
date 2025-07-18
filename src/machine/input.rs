@@ -1,4 +1,4 @@
-use std::{fs::{self, Metadata}, io, path::PathBuf};
+use std::{fs, io, path::PathBuf};
 
 type PotentialPage = io::Result<Option<Page>>;
 
@@ -98,10 +98,6 @@ impl TracedPages {
         let metadata: fs::Metadata = entry.path().metadata()?;
 
         Ok(metadata.is_dir())
-    }
-
-    fn is_empty(&self) -> bool {
-        return self.list.is_empty();
     }
 
     pub fn trace_pages(root_dir: &PathBuf) -> io::Result<TracedPages> {
