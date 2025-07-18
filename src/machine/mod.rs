@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 use clap::Parser;
 
+mod input;
+
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct MachineConfig {
@@ -19,5 +21,6 @@ pub struct MachineConfig {
 pub fn execute_cmd() {
     let args = MachineConfig::parse();
     
-    println!("input: {:?}", args.input_path);
+    let o = input::Page::new(args.input_path);
+    println!("{:?}", o);
 }
