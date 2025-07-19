@@ -26,7 +26,7 @@ impl MachineConfig {
 
         let mut path_components = path.components();
 
-        for i in 0..n {
+        for _i in 0..n {
             path_components.next();
         }
 
