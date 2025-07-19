@@ -9,13 +9,13 @@ pub struct Page {
     postfix_path: Option<PathBuf>
 }
 impl Page {
-    fn path(&self) -> PathBuf {
+    pub fn path(&self) -> PathBuf {
         return self.path.clone();
     }
-    fn prefix_path(&self) -> Option<PathBuf> {
+    pub fn prefix_path(&self) -> Option<PathBuf> {
         return self.prefix_path.clone();
     }
-    fn postfix_path(&self) -> Option<PathBuf> {
+    pub fn postfix_path(&self) -> Option<PathBuf> {
         return self.postfix_path.clone();
     }
 

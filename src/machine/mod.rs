@@ -31,6 +31,7 @@ impl MachineConfig {
 
         let mut new_path: PathBuf = self.output_path.clone();
         new_path.extend(path_components);
+        new_path.set_extension("html");
 
         new_path
     }
@@ -59,7 +60,7 @@ mod tests {
 
         assert_eq!(
             machine_config.mirror_input_path(PathBuf::from("test-inputs/pages/main.md")),
-            PathBuf::from("test-outputs/pages/main.md")
+            PathBuf::from("test-outputs/pages/main.html")
         );
     }
     #[test]
@@ -74,7 +75,7 @@ mod tests {
         
         assert_eq!(
             machine_config.mirror_input_path(PathBuf::from("test-inputs/pages/main.md")),
-            PathBuf::from("test-outputs/main.md")
+            PathBuf::from("test-outputs/main.html")
         );
     }
     #[test]
@@ -89,7 +90,7 @@ mod tests {
         
         assert_eq!(
             machine_config.mirror_input_path(PathBuf::from("test-inputs/main.md")),
-            PathBuf::from("test-outputs/pages/main.md")
+            PathBuf::from("test-outputs/pages/main.html")
         );
     }
 }
