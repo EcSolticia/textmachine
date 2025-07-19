@@ -5,10 +5,19 @@ type PotentialPage = io::Result<Option<Page>>;
 #[derive(Debug, Clone)]
 pub struct Page {
     path: PathBuf,
-    prefix_path: PathBuf,
-    postfix_path: PathBuf
+    prefix_path: Option<PathBuf>,
+    postfix_path: Option<PathBuf>
 }
 impl Page {
+    fn path(&self) -> PathBuf {
+        return self.path.clone();
+    }
+    fn prefix_path(&self) -> Option<PathBuf> {
+        return self.prefix_path.clone();
+    }
+    fn postfix_path(&self) -> Option<PathBuf> {
+        return self.postfix_path.clone();
+    }
 
     fn get_path_if_entry_ends_with(dir_entry: &fs::DirEntry, pat: &str) -> Option<PathBuf> {
         let condition: bool = dir_entry.file_name().to_str()?.ends_with(pat);
@@ -30,19 +39,10 @@ impl Page {
     }
 
     pub fn create_empty() -> Page {
-        return Page {
+        Page {
             path: PathBuf::new(),
-            prefix_path: PathBuf::new(),
-            postfix_path: PathBuf::new()
-        }
-    }
-
-    fn missing_page_path(&self) -> bool {
-        let s: Option<&str> = self.path.to_str();
-        if s.is_none() {
-            return true
-        } else {
-            return s.unwrap().is_empty()
+            prefix_path: None,
+            postfix_path: None
         }
     }
 
@@ -50,50 +50,45 @@ impl Page {
         let dir_read: fs::ReadDir = fs::read_dir(containing_dir)?;
         
         let mut page: Page = Page::create_empty();
+        let mut page_path: Option<PathBuf> = None;
 
         for entry in dir_read {
             let unwrapped_entry: fs::DirEntry = entry?;
 
-            {
-                let potential_page_path: Option<PathBuf> = Page::get_entry_path_if_page(&unwrapped_entry);
-                if potential_page_path.is_some() {
-                    page.path = potential_page_path.unwrap();
-                    continue;
-                }
+            if page_path.is_none() {
+                page_path = Page::get_entry_path_if_page(&unwrapped_entry);
             }
-            {
-                let potential_prefix_path: Option<PathBuf> = Page::get_entry_path_if_prefix(&unwrapped_entry);
-                if potential_prefix_path.is_some() {
-                    page.prefix_path = potential_prefix_path.unwrap();
-                    continue;
-                }
+            if page.prefix_path.is_none() {
+                page.prefix_path = Page::get_entry_path_if_prefix(&unwrapped_entry);
             }
-            {
-                let potential_postfix_path: Option<PathBuf> = Page::get_entry_path_if_postfix(&unwrapped_entry);
-                if potential_postfix_path.is_some() {
-                    page.postfix_path = potential_postfix_path.unwrap();
-                    continue;
-                }
+            if page.postfix_path.is_none() {
+                page.postfix_path = Page::get_entry_path_if_postfix(&unwrapped_entry);
             }
 
         }
 
-        if page.missing_page_path() {
+        if page_path.is_none() {
             return Ok(None)
-        }        
+        } else {
+            page.path = page_path.unwrap();
+        }
 
         Ok(Some(page))
     }
 
 }
 
-type PageList = Vec<Page>;
+pub type PageList = Vec<Page>;
 
 #[derive(Debug)]
 pub struct TracedPages {
     list: PageList
 }
 impl TracedPages {
+    pub fn get_list(&self) -> &PageList {
+        &self.list
+    }
+
     fn is_dir(entry: &fs::DirEntry) -> io::Result<bool> {
         let metadata: fs::Metadata = entry.path().metadata()?;
 

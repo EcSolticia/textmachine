@@ -22,5 +22,5 @@ pub fn execute_cmd() {
     let args = MachineConfig::parse();
     
     let o = input::TracedPages::trace_pages(&args.input_path);
-    println!("{:?}", o);
+    println!("{:#?}", o);
 }
