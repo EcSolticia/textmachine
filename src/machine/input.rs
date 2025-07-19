@@ -80,7 +80,7 @@ impl Page {
 
 pub type PageList = Vec<Page>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TracedPages {
     list: PageList
 }

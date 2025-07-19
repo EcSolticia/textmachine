@@ -3,6 +3,7 @@ use clap::Parser;
 
 mod generator;
 mod input;
+mod output;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -38,10 +39,21 @@ impl MachineConfig {
 }
 
 pub fn execute_cmd() {
-    let args = MachineConfig::parse();
+    let args: MachineConfig = MachineConfig::parse();
     
-    let o = input::TracedPages::trace_pages(&args.input_path);
-    println!("{:#?}", o);
+    let traced_pages = input::TracedPages::trace_pages(&args.input_path);
+    
+    if traced_pages.is_err() {
+        panic!();
+    }
+    let unwrapped_traced_pages: input::TracedPages = traced_pages.unwrap();
+
+    let output_pages = output::OutputPages::new(unwrapped_traced_pages.clone(), &args);
+
+    println!("--- Input Pages ---\n\n");
+    println!("{:#?}\n\n", unwrapped_traced_pages.get_list());
+    println!("--- Output Pages ---\n\n");
+    println!("{:#?}", output_pages.list);
 }
 
 #[cfg(test)]
