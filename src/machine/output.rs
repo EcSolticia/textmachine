@@ -4,7 +4,8 @@ use super::MachineConfig;
 
 #[derive(Debug)]
 pub struct OutputPage {
-    pub path: PathBuf
+    pub path: PathBuf,
+    pub input_page: input::Page
 }
 
 pub type PageList = Vec<OutputPage>;
@@ -19,7 +20,10 @@ impl OutputPages {
         let input_list: input::PageList = traced_pages.get_list().clone();
         for page in input_list {
             working_list.push(
-                OutputPage { path: machine_config.mirror_input_path(page.path()) }
+                OutputPage { 
+                    path: machine_config.mirror_input_path(page.path()), 
+                    input_page: page
+                }
             )
         }
 
