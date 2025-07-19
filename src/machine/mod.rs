@@ -54,6 +54,8 @@ pub fn execute_cmd() {
     println!("{:#?}\n\n", unwrapped_traced_pages.get_list());
     println!("--- Output Pages ---\n\n");
     println!("{:#?}", output_pages.list);
+
+    generator::generate(output_pages);
 }
 
 #[cfg(test)]

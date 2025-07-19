@@ -21,7 +21,7 @@
       };
 
       devShells.default = pkgs.mkShell {
-        packages = [ rsTools pkgs.bash ];
+        packages = [ rsTools pkgs.pandoc pkgs.bash ];
       };
 
     });
