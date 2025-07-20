@@ -7,19 +7,13 @@ mod output;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
-pub struct MachineConfig {
+pub struct CmdArgs {
     #[arg(short, long)]    
     input_path: PathBuf,
     #[arg(short, long)]
-    output_path: PathBuf,
-    #[arg(short, long)]
-    theme_path: PathBuf,
-    #[arg(long)]
-    top_toc: bool,
-    #[arg(long)]
-    numbered_headers: bool
+    output_path: PathBuf
 }
-impl MachineConfig {
+impl CmdArgs {
     fn mirror_input_path(&self, path: PathBuf) -> PathBuf {
         let input_path_comps= self.input_path.components();
         let n: usize = input_path_comps.clone().count();
@@ -39,7 +33,7 @@ impl MachineConfig {
 }
 
 pub fn execute_cmd() {
-    let args: MachineConfig = MachineConfig::parse();
+    let args: CmdArgs = CmdArgs::parse();
     
     let traced_pages = input::TracedPages::trace_pages(&args.input_path);
     
@@ -66,46 +60,37 @@ mod tests {
 
     #[test]
     fn test_mirror_input_path() {
-        let machine_config: MachineConfig = MachineConfig {
+        let cmd_args: CmdArgs = CmdArgs {
             input_path: PathBuf::from("test-inputs"),
-            output_path: PathBuf::from("test-outputs"),
-            theme_path: PathBuf::from("theme.css"),
-            top_toc: true,
-            numbered_headers: true
+            output_path: PathBuf::from("test-outputs")
         };
 
         assert_eq!(
-            machine_config.mirror_input_path(PathBuf::from("test-inputs/pages/main.md")),
+            cmd_args.mirror_input_path(PathBuf::from("test-inputs/pages/main.md")),
             PathBuf::from("test-outputs/pages/main.html")
         );
     }
     #[test]
     fn test_mirror_input_path_when_it_is_not_its_root_component() {
-        let machine_config: MachineConfig = MachineConfig {
+        let cmd_args: CmdArgs = CmdArgs {
             input_path: PathBuf::from("test-inputs/pages"),
-            output_path: PathBuf::from("test-outputs"),
-            theme_path: PathBuf::from("theme.css"),
-            top_toc: true,
-            numbered_headers: true
+            output_path: PathBuf::from("test-outputs")
         };
         
         assert_eq!(
-            machine_config.mirror_input_path(PathBuf::from("test-inputs/pages/main.md")),
+            cmd_args.mirror_input_path(PathBuf::from("test-inputs/pages/main.md")),
             PathBuf::from("test-outputs/main.html")
         );
     }
     #[test]
     fn test_mirror_input_path_when_output_path_is_not_its_root_component() {
-        let machine_config: MachineConfig = MachineConfig {
+        let cmd_args: CmdArgs = CmdArgs {
             input_path: PathBuf::from("test-inputs"),
-            output_path: PathBuf::from("test-outputs/pages"),
-            theme_path: PathBuf::from("theme.css"),
-            top_toc: true,
-            numbered_headers: true
+            output_path: PathBuf::from("test-outputs/pages")
         };
         
         assert_eq!(
-            machine_config.mirror_input_path(PathBuf::from("test-inputs/main.md")),
+            cmd_args.mirror_input_path(PathBuf::from("test-inputs/main.md")),
             PathBuf::from("test-outputs/pages/main.html")
         );
     }

@@ -1,6 +1,6 @@
 use::std::path::PathBuf;
 use crate::machine::input;
-use super::MachineConfig;
+use super::CmdArgs;
 
 #[derive(Debug)]
 pub struct OutputPage {
@@ -14,14 +14,14 @@ pub struct OutputPages {
     pub list: PageList
 }
 impl OutputPages {
-    pub fn new(traced_pages: input::TracedPages, machine_config: &MachineConfig) -> OutputPages {
+    pub fn new(traced_pages: input::TracedPages, cmd_args: &CmdArgs) -> OutputPages {
         let mut working_list: PageList = vec![];
 
         let input_list: input::PageList = traced_pages.get_list().clone();
         for page in input_list {
             working_list.push(
                 OutputPage { 
-                    path: machine_config.mirror_input_path(page.path()), 
+                    path: cmd_args.mirror_input_path(page.path()), 
                     input_page: page
                 }
             )
