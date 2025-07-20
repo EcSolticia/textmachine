@@ -1,0 +1,22 @@
+name: Build and Test
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build_and_test:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-13, macos-15]
+    
+    steps:
+    
+    - uses: actions/checkout@v4
+    
+    - uses: cachix/install-nix-action@v31
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+    - run: nix build
+    - run: nix develop --command cargo test
