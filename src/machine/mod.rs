@@ -53,9 +53,11 @@ pub fn execute_cmd() {
     println!("--- Input Pages ---\n\n");
     println!("{:#?}\n\n", unwrapped_traced_pages.get_list());
     println!("--- Output Pages ---\n\n");
-    println!("{:#?}", output_pages.list);
+    println!("{:#?}\n\n", output_pages.list);
 
-    generator::generate(output_pages);
+    println!("--- PandocOutput ---\n\n");
+    let gen_output = generator::generate(output_pages);
+    println!("{:#?}", gen_output);
 }
 
 #[cfg(test)]

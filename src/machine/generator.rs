@@ -1,16 +1,45 @@
 use crate::machine::{output};
-use std::{path::PathBuf, io, fs};
+use std::{path::PathBuf, io, fs, fmt};
 
 fn page_dir_exists(page_path: &PathBuf) -> io::Result<bool> {
     page_path.parent().unwrap().try_exists()
 }
 
-pub fn generate(output_pages: output::OutputPages) -> io::Result<()> {
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("{0}")]
+    IoError(#[from] io::Error),
+    #[error("some error with pandoc occured")]
+    PandocError(#[from] pandoc::PandocError)
+}
+
+pub struct PandocOutputWrapper {
+    actual: pandoc::PandocOutput
+}
+impl PandocOutputWrapper {
+    pub fn new(pandoc_output: pandoc::PandocOutput) -> PandocOutputWrapper {
+        PandocOutputWrapper { actual: pandoc_output }
+    }
+}
+impl fmt::Debug for PandocOutputWrapper {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match &self.actual {
+            pandoc::PandocOutput::ToFile(pathb) => write!(f, "{:?}", pathb),
+            _ => write!(f, "pandoc output is non-file")
+        }
+    }
+}
+
+pub type PandocOutputs = Vec<PandocOutputWrapper>;
+
+pub fn generate(output_pages: output::OutputPages) -> Result<PandocOutputs, Error> {
+    let mut pandoc_outputs: PandocOutputs = vec![];
+    
     for page in output_pages.list {
         let page_dir_exists: bool = page_dir_exists(&page.path)?;
 
         if !page_dir_exists {
-            let _ = fs::create_dir(&page.path.parent().unwrap());
+            fs::create_dir(&page.path.parent().unwrap())?;
         }
 
         let mut pandoc: pandoc::Pandoc = pandoc::new();
@@ -29,9 +58,9 @@ pub fn generate(output_pages: output::OutputPages) -> io::Result<()> {
             page.path
         ));
 
-        pandoc.execute().unwrap();
-        
+        let new_output: pandoc::PandocOutput = pandoc.execute()?;
+        pandoc_outputs.push(PandocOutputWrapper::new(new_output));
     }
-
-    Ok(())
+    
+    Ok(pandoc_outputs)
 }
