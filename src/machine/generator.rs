@@ -32,6 +32,15 @@ impl fmt::Debug for PandocOutputWrapper {
 
 pub type PandocOutputs = Vec<PandocOutputWrapper>;
 
+use pandoc::PandocOption;
+fn get_options() -> Vec<PandocOption> {
+    vec![
+        PandocOption::Standalone,
+        PandocOption::TableOfContents,
+        PandocOption::NumberSections
+    ]
+}
+
 pub fn generate(output_pages: output::OutputPages) -> Result<PandocOutputs, Error> {
     let mut pandoc_outputs: PandocOutputs = vec![];
     
@@ -54,6 +63,8 @@ pub fn generate(output_pages: output::OutputPages) -> Result<PandocOutputs, Erro
             pandoc.add_input(&postfix_path.unwrap());
         }
 
+        pandoc.add_options(&get_options());
+        
         pandoc.set_output(pandoc::OutputKind::File(
             page.path
         ));
