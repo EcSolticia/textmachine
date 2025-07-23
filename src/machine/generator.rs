@@ -30,12 +30,8 @@ fn add_lua_filters(pandoc: &mut pandoc::Pandoc) -> io::Result<bool> {
         filter_path = _pkgs_path.join(filter_path);
     }
 
-    if let Some(str_path) = filter_path.to_str() {
-        pandoc.arg("lua-filter", str_path);
-        Ok(true)
-    } else {
-        Ok(false)
-    }
+    pandoc.add_option(PandocOption::LuaFilter(filter_path));
+    Ok(true)
 }
 
 #[derive(Debug, thiserror::Error)]
