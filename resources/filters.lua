@@ -1,7 +1,7 @@
 function Header (h)
   if h.identifier ~= '' then
     local anchor_link = pandoc.Link(
-      "📌",
+      "(<)",
       '#' .. h.identifier,
       '',
       {class = 'anchor'}
