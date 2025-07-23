@@ -29,13 +29,13 @@ impl Page {
     }
 
     fn get_entry_path_if_prefix(dir_entry: &fs::DirEntry) -> Option<PathBuf> {
-        Page::get_path_if_entry_ends_with(dir_entry, ".textmachine.prefix.md")
+        Page::get_path_if_entry_ends_with(dir_entry, ".textmachine.prefix")
     }
     fn get_entry_path_if_postfix(dir_entry: &fs::DirEntry) -> Option<PathBuf> {
-        Page::get_path_if_entry_ends_with(dir_entry, ".textmachine.postfix.md")
+        Page::get_path_if_entry_ends_with(dir_entry, ".textmachine.postfix")
     }
     fn get_entry_path_if_page(dir_entry: &fs::DirEntry) -> Option<PathBuf> {
-        Page::get_path_if_entry_ends_with(dir_entry, ".textmachine.page.md")
+        Page::get_path_if_entry_ends_with(dir_entry, ".md")
     }
 
     pub fn create_empty() -> Page {
