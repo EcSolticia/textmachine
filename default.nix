@@ -12,4 +12,9 @@ in rustPlatform.buildRustPackage rec {
   cargoLock.lockFile = ./Cargo.lock;
 
   src = lib.cleanSource ./.;
+
+  postInstall = ''
+    mkdir -p $out/resources
+    cp ./resources/filters.lua $out/resources/filters.lua
+  '';
 }

@@ -5,6 +5,23 @@ fn page_dir_exists(page_path: &PathBuf) -> io::Result<bool> {
     page_path.parent().unwrap().try_exists()
 }
 
+// may panic generally
+fn add_lua_filters(pandoc: &mut pandoc::Pandoc) {
+    let mut filter_path: PathBuf = PathBuf::from("resources/filters.lua");
+
+    if !filter_path.try_exists().unwrap() {
+        // may panic
+        let curp: PathBuf = std::env::current_exe().unwrap();
+
+        // may panic
+        let pkg_path = curp.parent().unwrap().parent().unwrap().to_path_buf();
+        
+        filter_path = pkg_path.join(filter_path);
+    }
+
+    pandoc.arg("lua-filter", filter_path.to_str().unwrap());
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("{0}")]
@@ -64,6 +81,10 @@ pub fn generate(output_pages: output::OutputPages) -> Result<PandocOutputs, Erro
         }
 
         pandoc.add_options(&get_options());
+
+        add_lua_filters(&mut pandoc);
+
+        pandoc.set_show_cmdline(true);
         
         pandoc.set_output(pandoc::OutputKind::File(
             page.path
