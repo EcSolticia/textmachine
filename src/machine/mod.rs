@@ -34,24 +34,19 @@ impl CmdArgs {
 
 pub fn execute_cmd() {
     let args: CmdArgs = CmdArgs::parse();
-    
-    let traced_pages = input::TracedPages::trace_pages(&args.input_path);
-    
-    if traced_pages.is_err() {
-        panic!();
+
+    match input::TracedPages::trace_pages(&args.input_path) {
+        Ok(traced_pages) => {
+            let output_pages: output::OutputPages = output::OutputPages::new(traced_pages, &args);
+            let gen_output = generator::generate(output_pages);
+
+            println!("gen_output: {:#?}", gen_output);
+        },
+        Err(e) => {
+            println!("{:#?}", e);
+        }
     }
-    let unwrapped_traced_pages: input::TracedPages = traced_pages.unwrap();
 
-    let output_pages = output::OutputPages::new(unwrapped_traced_pages.clone(), &args);
-
-    println!("--- Input Pages ---\n\n");
-    println!("{:#?}\n\n", unwrapped_traced_pages.get_list());
-    println!("--- Output Pages ---\n\n");
-    println!("{:#?}\n\n", output_pages.list);
-
-    println!("--- PandocOutput ---\n\n");
-    let gen_output = generator::generate(output_pages);
-    println!("{:#?}", gen_output);
 }
 
 #[cfg(test)]
