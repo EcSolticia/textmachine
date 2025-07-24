@@ -66,11 +66,11 @@ impl Page {
             }
 
         }
-
-        if page_path.is_none() {
-            return Ok(None)
+        
+        if let Some(path) = page_path {
+            page.path = path;
         } else {
-            page.path = page_path.unwrap();
+            return Ok(None)
         }
 
         Ok(Some(page))
@@ -99,10 +99,9 @@ impl TracedPages {
         let dir_read: fs::ReadDir = fs::read_dir(root_dir)?;
 
         let mut page_list: PageList = vec![];
-
-        let new_page: Option<Page> = Page::new(root_dir.clone())?;
-        if new_page.is_some() {
-            page_list.push(new_page.unwrap());
+        
+        if let Some(new_page) = Page::new(root_dir.clone())? {
+            page_list.push(new_page);
         }
 
         for entry in dir_read {
