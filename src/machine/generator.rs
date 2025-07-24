@@ -81,17 +81,15 @@ pub fn generate(output_pages: output::OutputPages) -> Result<PandocOutputs, Erro
         }
 
         let mut pandoc: pandoc::Pandoc = pandoc::new();
-        
-        let prefix_path: Option<PathBuf> = (&page).input_page.prefix_path();
-        if prefix_path.is_some() {
-            pandoc.add_input(&prefix_path.unwrap());
+
+        if let Some(prefix_path) = (&page).input_page.prefix_path() {
+            pandoc.add_input(&prefix_path);
         }
         pandoc.add_input(&page.input_page.path());
-        let postfix_path: Option<PathBuf> = (&page).input_page.postfix_path();
-        if postfix_path.is_some() {
-            pandoc.add_input(&postfix_path.unwrap());
+        if let Some(postfix_path) = (&page).input_page.postfix_path() {
+            pandoc.add_input(&postfix_path);
         }
-
+        
         pandoc.add_options(&get_options());
 
         add_lua_filters(&mut pandoc)?;
