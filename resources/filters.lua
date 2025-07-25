@@ -23,7 +23,15 @@ function strip_end(content, endw)
 end
 
 function md_to_html_link(link_target)
-  local tm = strip_end(link_target, ".md")
+  local tm1 = strip_end(link_target, ".md")
+  local tm2 = strip_end(link_target, ".md/")
+
+  local tm = ""
+
+  if tm1 ~= link_target then tm = tm1
+  elseif tm2 ~= link_target then tm = tm2
+  else return link_target end
+
   return tm .. ".html"
 end
 
