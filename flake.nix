@@ -14,14 +14,18 @@
         inherit system overlays;
       };
       rsTools = pkgs.rust-bin.stable."1.88.0".default;
+      pandoc = pkgs.pandoc;
     in {
 
       packages.default = pkgs.callPackage ./. {
         inherit rsTools;
+        inherit pandoc;
+        makeWrapper = pkgs.makeWrapper;
+        makeBinPath = pkgs.lib.makeBinPath;
       };
 
       devShells.default = pkgs.mkShell {
-        packages = [ rsTools pkgs.pandoc pkgs.bash ];
+        packages = [ rsTools pandoc pkgs.bash ];
       };
 
     });
