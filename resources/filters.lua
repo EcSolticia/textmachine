@@ -11,23 +11,13 @@ function Header (h)
   end
 end
 
-function strip_end(content, endw)
-  local nc = #content
-  local ne = #endw
-
-  if ne <= nc and string.sub(content, -ne) == endw then
-    return string.sub(content, 1, nc - ne)
-  else
-    return content
-  end
-end
-
-function md_to_html_link(link_target)
-  local tm = strip_end(link_target, ".md")
-  return tm .. ".html"
+function link_md_to_html(target)
+  return target:gsub("%.md([#])", ".html%1")
+               :gsub("%.md$", ".html")
 end
 
 function Link(el)
-  local new_target = md_to_html_link(el.target)
+  local new_target = link_md_to_html(el.target)
+  
   return pandoc.Link(el.content, new_target, el.title)
 end
