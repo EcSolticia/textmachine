@@ -12,7 +12,7 @@ function Header (h)
 end
 
 function link_md_to_html(target)
-  return target:gsub("%.md([#?])", ".html%1")
+  return target:gsub("%.md([#])", ".html%1")
                :gsub("%.md$", ".html")
 end
 
