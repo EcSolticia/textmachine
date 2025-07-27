@@ -1,5 +1,6 @@
 use crate::machine::{output};
 use std::{path::PathBuf, io, fs, fmt};
+use tempfile::NamedTempFile;
 
 fn path_exists(path: &PathBuf) -> io::Result<bool> {
     path.try_exists()
@@ -9,29 +10,17 @@ fn page_dir_exists(page_path: &PathBuf) -> io::Result<bool> {
     path_exists(&page_path.parent().unwrap().to_path_buf())
 }
 
-fn add_lua_filters(pandoc: &mut pandoc::Pandoc) -> io::Result<bool> {
-    let mut filter_path: PathBuf = PathBuf::from("resources/filters.lua");
+fn add_lua_filters(pandoc: &mut pandoc::Pandoc) -> io::Result<NamedTempFile> {
+    let filter: &str = include_str!("./../../resources/filters.lua");
 
-    if !path_exists(&filter_path)? {
-        let curp: PathBuf = std::env::current_exe()?;
+    let filter_tmp_file: NamedTempFile = NamedTempFile::new()?;
+    
+    let filter_path: PathBuf = filter_tmp_file.path().to_path_buf();
 
-        let mut _pkgs_path: PathBuf = PathBuf::new();
-
-        if let Some(bin_path) = curp.parent() {
-            if let Some(pkg_path) = bin_path.parent() {
-                _pkgs_path = pkg_path.to_path_buf();
-            } else {
-                return Ok(false)
-            }
-        } else {
-            return Ok(false)
-        }
-        
-        filter_path = _pkgs_path.join(filter_path);
-    }
-
+    fs::write(&filter_path, filter)?;
+    
     pandoc.add_option(PandocOption::LuaFilter(filter_path));
-    Ok(true)
+    Ok(filter_tmp_file)
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -92,7 +81,7 @@ pub fn generate(output_pages: output::OutputPages) -> Result<PandocOutputs, Erro
         
         pandoc.add_options(&get_options());
 
-        add_lua_filters(&mut pandoc)?;
+        let _filter_tmp_file = add_lua_filters(&mut pandoc)?;
 
         pandoc.set_show_cmdline(true);
         

@@ -16,9 +16,6 @@ in rustPlatform.buildRustPackage rec {
   src = lib.cleanSource ./.;
 
   postInstall = ''
-    mkdir -p $out/resources
-    cp ./resources/filters.lua $out/resources/filters.lua
-
     wrapProgram $out/bin/textmachine \
       --prefix PATH : ${makeBinPath [ pandoc ]}
   '';
