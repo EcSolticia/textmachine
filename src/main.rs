@@ -1,5 +1,5 @@
-mod machine;
+use textmachine;
 
 fn main() {
-    machine::execute_cmd();
+    textmachine::execute_cmd();
 }
