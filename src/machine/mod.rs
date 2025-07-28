@@ -9,9 +9,9 @@ mod output;
 #[command(version, about, long_about = None)]
 pub struct CmdArgs {
     #[arg(short, long)]    
-    input_path: PathBuf,
+    pub input_path: PathBuf,
     #[arg(short, long)]
-    output_path: PathBuf
+    pub output_path: PathBuf
 }
 impl CmdArgs {
     fn mirror_input_path(&self, path: PathBuf) -> PathBuf {
