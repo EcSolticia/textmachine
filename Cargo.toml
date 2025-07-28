@@ -1,7 +1,10 @@
 [package]
 name = "textmachine"
+description = "Opinionated, Simple, Hyper-minimal Pandoc-based SSG"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+repository = "https://github.com/EcSolticia/textmachine"
 
 [dependencies]
 clap = { version = "4.5.41", features = ["derive"] }

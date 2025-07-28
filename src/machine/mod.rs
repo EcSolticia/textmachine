@@ -9,9 +9,9 @@ mod output;
 #[command(version, about, long_about = None)]
 pub struct CmdArgs {
     #[arg(short, long)]    
-    input_path: PathBuf,
+    pub input_path: PathBuf,
     #[arg(short, long)]
-    output_path: PathBuf
+    pub output_path: PathBuf
 }
 impl CmdArgs {
     fn mirror_input_path(&self, path: PathBuf) -> PathBuf {
@@ -32,9 +32,7 @@ impl CmdArgs {
     }
 }
 
-pub fn execute_cmd() {
-    let args: CmdArgs = CmdArgs::parse();
-
+pub fn execute(args: CmdArgs) {
     match input::TracedPages::trace_pages(&args.input_path) {
         Ok(traced_pages) => {
             let output_pages: output::OutputPages = output::OutputPages::new(traced_pages, &args);
@@ -46,7 +44,12 @@ pub fn execute_cmd() {
             println!("{:#?}", e);
         }
     }
+}
 
+pub fn execute_cmd() {
+    let args: CmdArgs = CmdArgs::parse();
+
+    execute(args);
 }
 
 #[cfg(test)]
