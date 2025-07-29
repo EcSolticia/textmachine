@@ -124,7 +124,8 @@ mod tests {
     fn test_mirror_input_path() {
         let cmd_args: CmdArgs = CmdArgs {
             input_path: PathBuf::from("test-inputs"),
-            output_path: PathBuf::from("test-outputs")
+            output_path: PathBuf::from("test-outputs"),
+            force: false
         };
 
         assert_eq!(
@@ -136,7 +137,8 @@ mod tests {
     fn test_mirror_input_path_when_it_is_not_its_root_component() {
         let cmd_args: CmdArgs = CmdArgs {
             input_path: PathBuf::from("test-inputs/pages"),
-            output_path: PathBuf::from("test-outputs")
+            output_path: PathBuf::from("test-outputs"),
+            force: false
         };
         
         assert_eq!(
@@ -148,7 +150,8 @@ mod tests {
     fn test_mirror_input_path_when_output_path_is_not_its_root_component() {
         let cmd_args: CmdArgs = CmdArgs {
             input_path: PathBuf::from("test-inputs"),
-            output_path: PathBuf::from("test-outputs/pages")
+            output_path: PathBuf::from("test-outputs/pages"),
+            force: false
         };
         
         assert_eq!(
