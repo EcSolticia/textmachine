@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use clap::Parser;
 
 //mod generator;
@@ -10,29 +9,11 @@ mod tree;
 #[command(version, about, long_about = None)]
 pub struct CmdArgs {
     #[arg(short, long)]    
-    pub input_path: PathBuf,
+    pub input_path: String,
     #[arg(short, long)]
-    pub output_path: PathBuf,
+    pub output_path: String,
     #[arg(short, long)]
     pub force: bool
-}
-impl CmdArgs {
-    fn mirror_input_path(&self, path: PathBuf) -> PathBuf {
-        let input_path_comps= self.input_path.components();
-        let n: usize = input_path_comps.clone().count();
-
-        let mut path_components = path.components();
-
-        for _i in 0..n {
-            path_components.next();
-        }
-
-        let mut new_path: PathBuf = self.output_path.clone();
-        new_path.extend(path_components);
-        new_path.set_extension("html");
-
-        new_path
-    }
 }
 
 pub mod sure_prompt {
@@ -49,10 +30,10 @@ pub mod sure_prompt {
         print_line("----");
         print_line("Called textmachine with the following arguments:");
         print_line(
-            format!("input_path: {}", args.input_path.to_str().unwrap()).as_str()
+            format!("input_path: {}", args.input_path).as_str()
         );
         print_line(
-            format!("output_path: {}", args.output_path.to_str().unwrap()).as_str()  
+            format!("output_path: {}", args.output_path).as_str()  
         );
         print!("\n");
         print_line("!!!IMPORTANT!!!");
@@ -82,7 +63,7 @@ pub mod sure_prompt {
 }
 
 pub fn execute(args: CmdArgs) {
-    let iputp: &str = args.input_path.to_str().unwrap();
+    let iputp: &str = &args.input_path;
     let tree = tree::Node::from(iputp);
 
     println!("{:#?}", tree);
@@ -120,49 +101,4 @@ pub fn execute_cmd() {
     let args: CmdArgs = CmdArgs::parse();
 
     execute(args);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_mirror_input_path() {
-        let cmd_args: CmdArgs = CmdArgs {
-            input_path: PathBuf::from("test-inputs"),
-            output_path: PathBuf::from("test-outputs"),
-            force: false
-        };
-
-        assert_eq!(
-            cmd_args.mirror_input_path(PathBuf::from("test-inputs/pages/main.md")),
-            PathBuf::from("test-outputs/pages/main.html")
-        );
-    }
-    #[test]
-    fn test_mirror_input_path_when_it_is_not_its_root_component() {
-        let cmd_args: CmdArgs = CmdArgs {
-            input_path: PathBuf::from("test-inputs/pages"),
-            output_path: PathBuf::from("test-outputs"),
-            force: false
-        };
-        
-        assert_eq!(
-            cmd_args.mirror_input_path(PathBuf::from("test-inputs/pages/main.md")),
-            PathBuf::from("test-outputs/main.html")
-        );
-    }
-    #[test]
-    fn test_mirror_input_path_when_output_path_is_not_its_root_component() {
-        let cmd_args: CmdArgs = CmdArgs {
-            input_path: PathBuf::from("test-inputs"),
-            output_path: PathBuf::from("test-outputs/pages"),
-            force: false
-        };
-        
-        assert_eq!(
-            cmd_args.mirror_input_path(PathBuf::from("test-inputs/main.md")),
-            PathBuf::from("test-outputs/pages/main.html")
-        );
-    }
 }

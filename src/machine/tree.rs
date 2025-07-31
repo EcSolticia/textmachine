@@ -133,3 +133,58 @@ impl Node {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_filename_for_dir() {
+        let path: &str = "blog/pages/p1";
+        assert_eq!(
+            helpers::get_filename(path).unwrap(),
+            String::from("p1")
+        );
+    }
+    #[test]
+    fn test_get_filename_for_dir_w_slash() {
+        let path: &str = "blog/pages/p1/";
+        assert_eq!(
+            helpers::get_filename(path).unwrap(),
+            String::from("p1")
+        );
+    }
+    #[test]
+    fn test_get_filename() {
+        let path: &str = "blog/index.md";
+        assert_eq!(
+            helpers::get_filename(path).unwrap(),
+            String::from("index.md")
+        );
+    }
+    #[test]
+    fn test_get_filename_empty() {
+        let path: &str = "";
+        let result: Result<String, NodeError> = helpers::get_filename(path);
+        assert!(result.is_err());
+    }
+    #[test]
+    fn test_get_filename_current_dir() {
+        let path: &str = ".";
+        let result: Result<String, NodeError> = helpers::get_filename(path);
+        assert!(result.is_err());
+    }
+    #[test]
+    fn test_get_filename_parent_dir() {
+        let path: &str = "..";
+        let result: Result<String, NodeError> = helpers::get_filename(path);
+        assert!(result.is_err());
+    }
+    #[test]
+    fn test_get_filename_root_dir() {
+        let path: &str = "/";
+        let result: Result<String, NodeError> = helpers::get_filename(path);
+        assert!(result.is_err());
+    }
+
+}
