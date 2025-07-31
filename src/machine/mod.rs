@@ -1,9 +1,10 @@
 use std::path::PathBuf;
 use clap::Parser;
 
-mod generator;
-mod input;
-mod output;
+//mod generator;
+//mod input;
+//mod output;
+mod tree;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -81,8 +82,13 @@ pub mod sure_prompt {
 }
 
 pub fn execute(args: CmdArgs) {
-    match input::TracedPages::trace_pages(&args.input_path) {
+    let iputp: &str = args.input_path.to_str().unwrap();
+    let tree = tree::Node::from(iputp);
+
+    println!("{:#?}", tree);
+    /*match input::TracedPages::trace_pages(&args.input_path) {
         Ok(traced_pages) => {
+            println!("{:#?}", traced_pages.get_tree());
             let output_pages: output::OutputPages = output::OutputPages::new(traced_pages, &args);
 
             
@@ -107,7 +113,7 @@ pub fn execute(args: CmdArgs) {
         Err(e) => {
             println!("{:#?}", e);
         }
-    }
+    }*/
 }
 
 pub fn execute_cmd() {

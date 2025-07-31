@@ -78,15 +78,15 @@ impl Page {
 
 }
 
-pub type PageList = Vec<Page>;
+use super::pagetree::Node;
 
 #[derive(Debug, Clone)]
 pub struct TracedPages {
-    list: PageList
+    data: Node
 }
 impl TracedPages {
-    pub fn get_list(&self) -> &PageList {
-        &self.list
+    pub fn get_tree(&self) -> Node {
+        self.data.clone()
     }
 
     fn is_dir(entry: &fs::DirEntry) -> io::Result<bool> {
@@ -96,23 +96,24 @@ impl TracedPages {
     }
 
     pub fn trace_pages(root_dir: &PathBuf) -> io::Result<TracedPages> {
-        let dir_read: fs::ReadDir = fs::read_dir(root_dir)?;
-
-        let mut page_list: PageList = vec![];
+        let mut page_tree: Node = Node::empty();
         
         if let Some(new_page) = Page::new(root_dir.clone())? {
-            page_list.push(new_page);
+            page_tree = Node::new(new_page);
         }
+
+        let dir_read: fs::ReadDir = fs::read_dir(root_dir)?;
 
         for entry in dir_read {
             let unwrapped_entry: fs::DirEntry = entry?;
 
             if TracedPages::is_dir(&unwrapped_entry)? {
                 let subdir_trace_results: TracedPages = TracedPages::trace_pages(&unwrapped_entry.path())?;
-                page_list.extend_from_slice(&subdir_trace_results.list);
+                page_tree.add_child(&subdir_trace_results.data);
+                //page_list.extend_from_slice(&subdir_trace_results.list);
             }
         }
 
-        Ok(TracedPages {list: page_list})
+        Ok(TracedPages {data: page_tree})
     }
 }
