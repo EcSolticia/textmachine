@@ -77,14 +77,14 @@ pub enum NodeError {
     IoError(#[from] io::Error)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum NodeType {
     NormalFile,
     Page,
     Dir
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node {
     name: String,
     node_type: NodeType,
@@ -92,6 +92,18 @@ pub struct Node {
 }
 impl Node {
 
+    pub fn get_children(&self) -> Vec<Node> {
+        self.children.clone()
+    }
+    
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
+    
+    pub fn get_nodetype(&self) -> NodeType {
+        self.node_type.clone()
+    }
+    
     pub fn from(path: &str) -> Result<Node, NodeError> {
         let node_type: NodeType = helpers::get_nodetype(path)?;
 

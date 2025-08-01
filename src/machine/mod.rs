@@ -1,8 +1,8 @@
 use clap::Parser;
 
-//mod generator;
-//mod input;
-//mod output;
+extern crate exitcode;
+
+mod generator;
 mod tree;
 
 #[derive(Parser, Debug)]
@@ -62,39 +62,47 @@ pub mod sure_prompt {
     }
 }
 
+use std::{fs, io};
+fn is_valid_input_dir(input_path: &str) -> io::Result<bool> {
+    let meta: fs::Metadata = fs::metadata(input_path)?;
+    Ok(meta.is_dir())
+}
+
 pub fn execute(args: CmdArgs) {
-    let iputp: &str = &args.input_path;
-    let tree = tree::Node::from(iputp);
-
-    println!("{:#?}", tree);
-    /*match input::TracedPages::trace_pages(&args.input_path) {
-        Ok(traced_pages) => {
-            println!("{:#?}", traced_pages.get_tree());
-            let output_pages: output::OutputPages = output::OutputPages::new(traced_pages, &args);
-
-            
-            if let Some(sure) = sure_prompt::handle(&args) {
-                if !sure {
-                    return;
-                }
-            } else {
-                println!("Could not read line from stdin, returning.");
-                return;
+    match is_valid_input_dir(&args.input_path) {
+        Ok(valid) => {
+            if !valid {
+                eprintln!("[textmachine-input-validation] input path {} is not a dir", &args.input_path);
+                std::process::exit(exitcode::NOINPUT);
             }
-            
-            match std::fs::remove_dir_all(args.output_path) {
-                Ok(_) => (),
-                Err(e) => println!("removing output dir: {:#?}", e)
-            }
-
-            let gen_output = generator::generate(output_pages);
-
-            println!("gen_output: {:#?}", gen_output);
         },
         Err(e) => {
-            println!("{:#?}", e);
+            eprintln!("{}", e);
+            std::process::exit(exitcode::IOERR);
         }
-    }*/
+    }
+    
+    let wrapped_tree = tree::Node::from(&args.input_path);
+    match wrapped_tree {
+        Ok(node) => {
+            generator::generate(node, &args.output_path);
+        },
+
+        Err(node_err) => {
+            match node_err {
+                tree::NodeError::NodeError(msg) => {
+                    eprintln!("{}", msg);
+                    std::process::exit(exitcode::DATAERR);
+                },
+                tree::NodeError::IoError(e) => {
+                    eprintln!("{}", e);
+                    std::process::exit(exitcode::IOERR);
+                }
+            }
+        }
+    }
+
+
 }
 
 pub fn execute_cmd() {
