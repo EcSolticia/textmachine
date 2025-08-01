@@ -85,7 +85,9 @@ pub fn execute(args: CmdArgs) {
     let wrapped_tree = tree::Node::from(&args.input_path);
     match wrapped_tree {
         Ok(node) => {
-            generator::generate(node, &args.output_path);
+            sure_prompt::handle(&args);
+            std::fs::remove_dir_all(&args.output_path);
+            generator::generate(node, &args.output_path, &args.input_path);
         },
 
         Err(node_err) => {
