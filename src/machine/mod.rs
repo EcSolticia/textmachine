@@ -13,9 +13,7 @@ pub struct CmdArgs {
     #[arg(short, long)]
     pub output_path: String,
     #[arg(short, long)]
-    pub force: bool,
-    #[arg(short, long)]
-    pub dry_run: bool
+    pub force: bool
 }
 
 pub mod sure_prompt {
@@ -89,7 +87,7 @@ pub fn execute(args: CmdArgs) {
         Ok(node) => {
             sure_prompt::handle(&args);
 
-            std::fs::remove_dir_all(&args.output_path).unwrap(); // handle this
+            let _ = std::fs::remove_dir_all(&args.output_path);
 
             let gen_output_wrapped = generator::generate(node, &args.output_path, &args.input_path);
             match gen_output_wrapped {
