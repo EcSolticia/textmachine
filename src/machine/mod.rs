@@ -94,10 +94,14 @@ pub fn execute(args: CmdArgs) {
             let gen_output_wrapped = generator::generate(node, &args.output_path, &args.input_path);
             match gen_output_wrapped {
                 Ok(gen_output) => {
-                    println!("{:#?}", gen_output);
+                    if let Err(e) = gen_output.present_pandoc_outputs() {
+                        eprintln!("{}", e);
+                        std::process::exit(exitcode::SOFTWARE)
+                    }
                 },
                 Err(e) => {
                     eprintln!("{}", e);
+                    std::process::exit(exitcode::SOFTWARE);
                 }
             }
         },
