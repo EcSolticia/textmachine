@@ -13,7 +13,9 @@ pub struct CmdArgs {
     #[arg(short, long)]
     pub output_path: String,
     #[arg(short, long)]
-    pub force: bool
+    pub force: bool,
+    #[arg(short, long)]
+    pub dry_run: bool
 }
 
 pub mod sure_prompt {
