@@ -1,9 +1,10 @@
 use clap::Parser;
-
-extern crate exitcode;
+use ui::note::Issuer;
 
 mod generator;
 mod tree;
+mod ui;
+mod errors;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -16,109 +17,36 @@ pub struct CmdArgs {
     pub force: bool
 }
 
-pub mod sure_prompt {
-    fn print_line(line: &str) {
-        println!("[textmachine-sure_prompt] {}", line);
-    }
-    
-    pub fn handle(args: &super::CmdArgs) -> Option<bool> {        
-
-        if args.force {
-            return Some(true);
-        }
-
-        print_line("----");
-        print_line("Called textmachine with the following arguments:");
-        print_line(
-            format!("input_path: {}", args.input_path).as_str()
-        );
-        print_line(
-            format!("output_path: {}", args.output_path).as_str()  
-        );
-        print!("\n");
-        print_line("!!!IMPORTANT!!!");
-        print_line("textmachine will delete the output path directory prior to generating pages");
-        print_line("Before continuing, ensure that the output path is really disposable.");
-        print_line("Ideally, in a git repository, it should be gitignored.");
-        print_line("Please confirm that you are certain, that outpath_path, if it exists, is disposable. [y/N]");
-        print!("\n");
-
-        let mut answer: String = String::new();
-        
-        match std::io::stdin().read_line(&mut answer) {
-            Ok(_) => {
-                let trimmed_answer = answer.trim();
-                match trimmed_answer {
-                    "n" | "N" | "no" | "No" => return Some(false),
-                    "y" | "Y" | "yes" | "Yes" => return Some(true),
-                    _ => {
-                        print_line("Answer is not 'y' or 'N'. Assuming 'N'.");
-                        return Some(false);
-                    }
-                }
-            },
-            Err(_) => return None
-        };
-    }
-}
-
-use std::{fs, io};
-fn is_valid_input_dir(input_path: &str) -> io::Result<bool> {
-    let meta: fs::Metadata = fs::metadata(input_path)?;
-    Ok(meta.is_dir())
-}
-
 pub fn execute(args: CmdArgs) {
-    match is_valid_input_dir(&args.input_path) {
-        Ok(valid) => {
-            if !valid {
-                eprintln!("[textmachine-input-validation] input path {} is not a dir", &args.input_path);
-                std::process::exit(exitcode::NOINPUT);
-            }
-        },
-        Err(e) => {
-            eprintln!("{}", e);
-            std::process::exit(exitcode::IOERR);
-        }
-    }
-    
-    let wrapped_tree = tree::Node::from(&args.input_path);
-    match wrapped_tree {
-        Ok(node) => {
-            sure_prompt::handle(&args);
+    let mut error: Option<errors::Error> = None;
 
-            let _ = std::fs::remove_dir_all(&args.output_path);
+    let utree = tree::Node::from(&args.input_path);
+    match utree {
+        Ok(tree) => {
 
-            let gen_output_wrapped = generator::generate(node, &args.output_path, &args.input_path);
-            match gen_output_wrapped {
+            // todo: delete output path with prompt
+
+            let ugen_outputs = generator::generate(
+                tree, 
+                &args.output_path, 
+                &args.input_path
+            );
+
+            match ugen_outputs {
                 Ok(gen_output) => {
-                    if let Err(e) = gen_output.present_pandoc_outputs() {
-                        eprintln!("{}", e);
-                        std::process::exit(exitcode::SOFTWARE)
-                    }
+                    gen_output.present_gen_outputs();
                 },
-                Err(e) => {
-                    eprintln!("{}", e);
-                    std::process::exit(exitcode::SOFTWARE);
-                }
+                Err(e) => error = Some(e)
             }
         },
-
-        Err(node_err) => {
-            match node_err {
-                tree::NodeError::NodeError(msg) => {
-                    eprintln!("{}", msg);
-                    std::process::exit(exitcode::DATAERR);
-                },
-                tree::NodeError::IoError(e) => {
-                    eprintln!("{}", e);
-                    std::process::exit(exitcode::IOERR);
-                }
-            }
-        }
+        Err(e) => error = Some(e)
     }
 
-
+    if let Some(err) = error {
+        err.issue().present_error();
+        std::process::exit(1);
+    }
+    std::process::exit(0);
 }
 
 pub fn execute_cmd() {

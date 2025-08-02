@@ -1,9 +1,10 @@
-use std::{fs, io, path::{PathBuf, Component}};
+use std::{fs, path::{PathBuf, Component}};
+use super::errors;
 
 mod helpers {
     use super::*;
 
-    pub fn get_filename(path: &str) -> Result<String, NodeError> {
+    pub fn get_filename(path: &str) -> Result<String, errors::Error> {
         let pathb: PathBuf = PathBuf::from(path);
 
         if let Some(last_component) = pathb.components().last() {
@@ -13,40 +14,40 @@ mod helpers {
                     if let Ok(string) = ostring.into_string() {
                         return Ok(string)
                     } else {
-                        return Err(NodeError::NodeError(
-                            format!("path name in input dir has invalid unicode characters")
+                        return Err(errors::Error::InvalidUnicode(
+                            format!("file name in input dir has invalid unicode characters")
                         ))
                     }
                 },
                 Component::CurDir => {
-                    return Err(NodeError::NodeError(
+                    return Err(errors::Error::InvalidInput(
                         format!("cannot include current dir as an input")
                     ))
                 },
                 Component::ParentDir => {
-                    return Err(NodeError::NodeError(
+                    return Err(errors::Error::InvalidInput(
                         format!("cannot include parent dir as an input")
                     ))
                 },
                 Component::Prefix(_) => {
-                    return Err(NodeError::NodeError(
+                    return Err(errors::Error::InvalidInput(
                         format!("cannot include windows path prefix as an input")
                     ))
                 },
                 Component::RootDir => {
-                    return Err(NodeError::NodeError(
+                    return Err(errors::Error::InvalidInput(
                         format!("cannot include root dir as an input")
                     ))
                 }
             }
         }
 
-        return Err(NodeError::NodeError(
+        return Err(errors::Error::UnknownError(
             String::from("unexpected error occured")
         ))
     }
 
-    pub fn get_nodetype(path: &str) -> Result<NodeType, NodeError> {
+    pub fn get_nodetype(path: &str) -> Result<NodeType, errors::Error> {
         let meta: fs::Metadata = fs::metadata(path)?;
 
         if meta.is_dir() {
@@ -58,23 +59,15 @@ mod helpers {
                 return Ok(NodeType::NormalFile)
             }
         } else if meta.is_symlink() {
-            return Err(NodeError::NodeError(
+            return Err(errors::Error::InvalidInput(
                 format!("symlinks in inputs not supported")
             ))
         } else {
-            return Err(NodeError::NodeError(
+            return Err(errors::Error::UnknownError(
                 format!("found unexpected file type in inputs")
             ))
         }
     }
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum NodeError {
-    #[error("[textmachine-error] {0}")]
-    NodeError(String),
-    #[error("{0}")]
-    IoError(#[from] io::Error)
 }
 
 #[derive(Debug, Clone)]
@@ -104,7 +97,7 @@ impl Node {
         self.node_type.clone()
     }
     
-    pub fn from(path: &str) -> Result<Node, NodeError> {
+    pub fn from(path: &str) -> Result<Node, errors::Error> {
         let node_type: NodeType = helpers::get_nodetype(path)?;
 
         let name: String = helpers::get_filename(path)?;
@@ -124,7 +117,7 @@ impl Node {
                     if let Some(npath) = epathb.to_str() {
                         new_path = npath;
                     } else {
-                        return Err(NodeError::NodeError(
+                        return Err(errors::Error::InvalidUnicode(
                             format!("path name in input dir has invalid unicode characters")
                         ))
                     }
@@ -177,25 +170,25 @@ mod tests {
     #[test]
     fn test_get_filename_empty() {
         let path: &str = "";
-        let result: Result<String, NodeError> = helpers::get_filename(path);
+        let result: Result<String, errors::Error> = helpers::get_filename(path);
         assert!(result.is_err());
     }
     #[test]
     fn test_get_filename_current_dir() {
         let path: &str = ".";
-        let result: Result<String, NodeError> = helpers::get_filename(path);
+        let result: Result<String, errors::Error> = helpers::get_filename(path);
         assert!(result.is_err());
     }
     #[test]
     fn test_get_filename_parent_dir() {
         let path: &str = "..";
-        let result: Result<String, NodeError> = helpers::get_filename(path);
+        let result: Result<String, errors::Error> = helpers::get_filename(path);
         assert!(result.is_err());
     }
     #[test]
     fn test_get_filename_root_dir() {
         let path: &str = "/";
-        let result: Result<String, NodeError> = helpers::get_filename(path);
+        let result: Result<String, errors::Error> = helpers::get_filename(path);
         assert!(result.is_err());
     }
 
